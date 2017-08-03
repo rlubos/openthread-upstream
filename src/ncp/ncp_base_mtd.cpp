@@ -31,6 +31,7 @@
  */
 
 #include <openthread/config.h>
+
 #include "ncp_base.hpp"
 
 #if OPENTHREAD_ENABLE_BORDER_ROUTER
@@ -3879,13 +3880,13 @@ otError NcpBase::SetPropertyHandler_MAC_SCAN_STATE(uint8_t aHeader, spinel_prop_
         break;
 
     case SPINEL_SCAN_STATE_BEACON:
-#if OPENTHREAD_ENABLE_RAW_LINK_API
+#if OPENTHREAD_RADIO || OPENTHREAD_ENABLE_RAW_LINK_API
         if (otLinkRawIsEnabled(mInstance))
         {
             error = OT_ERROR_NOT_IMPLEMENTED;
         }
         else
-#endif // OPENTHREAD_ENABLE_RAW_LINK_API
+#endif // OPENTHREAD_RADIO || OPENTHREAD_ENABLE_RAW_LINK_API
         {
             error = otLinkActiveScan(
                         mInstance,
@@ -3900,7 +3901,7 @@ otError NcpBase::SetPropertyHandler_MAC_SCAN_STATE(uint8_t aHeader, spinel_prop_
         break;
 
     case SPINEL_SCAN_STATE_ENERGY:
-#if OPENTHREAD_ENABLE_RAW_LINK_API
+#if OPENTHREAD_RADIO || OPENTHREAD_ENABLE_RAW_LINK_API
         if (otLinkRawIsEnabled(mInstance))
         {
             uint8_t scanChannel;
@@ -3921,7 +3922,7 @@ otError NcpBase::SetPropertyHandler_MAC_SCAN_STATE(uint8_t aHeader, spinel_prop_
                     );
         }
         else
-#endif // OPENTHREAD_ENABLE_RAW_LINK_API
+#endif // OPENTHREAD_RADIO || OPENTHREAD_ENABLE_RAW_LINK_API
         {
             error = otLinkEnergyScan(
                         mInstance,

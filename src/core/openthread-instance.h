@@ -45,14 +45,17 @@
 
 #include "openthread-core-config.h"
 #include "openthread-single-instance.h"
-#if OPENTHREAD_ENABLE_RAW_LINK_API
+#if OPENTHREAD_RADIO || OPENTHREAD_ENABLE_RAW_LINK_API
 #include "api/link_raw.hpp"
+#include "common/message.hpp"
 #endif
+#if OPENTHREAD_FTD || OPENTHREAD_MTD
 #include "coap/coap.hpp"
 #include "crypto/heap.hpp"
 #include "crypto/mbedtls.hpp"
 #include "net/ip6.hpp"
 #include "thread/thread_netif.hpp"
+#endif
 
 /**
  * This type represents all the static / global variables used by OpenThread allocated in one place.
@@ -63,8 +66,7 @@ typedef struct otInstance
     // Callbacks
     //
 
-    ot::Ip6::NetifCallback mNetifCallback[OPENTHREAD_CONFIG_MAX_STATECHANGE_HANDLERS];
-
+#if OPENTHREAD_FTD || OPENTHREAD_MTD
     otIp6ReceiveCallback mReceiveIp6DatagramCallback;
     void *mReceiveIp6DatagramCallbackContext;
 
@@ -78,11 +80,7 @@ typedef struct otInstance
     // State
     //
 
-    ot::TaskletScheduler mTaskletScheduler;
-    ot::TimerMilliScheduler mTimerMilliScheduler;
-#if OPENTHREAD_CONFIG_ENABLE_PLATFORM_USEC_TIMER
-    ot::TimerMicroScheduler mTimerMicroScheduler;
-#endif
+    ot::Ip6::NetifCallback mNetifCallback[OPENTHREAD_CONFIG_MAX_STATECHANGE_HANDLERS];
 
 #if !OPENTHREAD_ENABLE_MULTIPLE_INSTANCES
     ot::Crypto::MbedTls mMbedTls;
@@ -91,24 +89,28 @@ typedef struct otInstance
     ot::Ip6::Ip6 mIp6;
     ot::ThreadNetif mThreadNetif;
 
-#if OPENTHREAD_ENABLE_RAW_LINK_API
-    ot::LinkRaw mLinkRaw;
-#endif // OPENTHREAD_ENABLE_RAW_LINK_API
-
 #if OPENTHREAD_ENABLE_APPLICATION_COAP
     ot::Coap::Coap mApplicationCoap;
 #endif // OPENTHREAD_ENABLE_APPLICATION_COAP
 
+#endif // OPENTHREAD_FTD || OPENTHREAD_MTD
+#if OPENTHREAD_RADIO || OPENTHREAD_ENABLE_RAW_LINK_API
+    ot::LinkRaw mLinkRaw;
+#endif // OPENTHREAD_RADIO || OPENTHREAD_ENABLE_RAW_LINK_API
 #if OPENTHREAD_CONFIG_ENABLE_DYNAMIC_LOG_LEVEL
     otLogLevel mLogLevel;
 #endif // OPENTHREAD_CONFIG_ENABLE_DYNAMIC_LOG_LEVEL
+#if OPENTHREAD_CONFIG_ENABLE_PLATFORM_USEC_TIMER
+    ot::TimerMicroScheduler mTimerMicroScheduler;
+#endif
+    ot::TimerMilliScheduler mTimerMilliScheduler;
+    ot::TaskletScheduler mTaskletScheduler;
     ot::MessagePool mMessagePool;
 
-    // Constructor
     otInstance(void);
-
 } otInstance;
 
+#if OPENTHREAD_FTD || OPENTHREAD_MTD
 static inline otInstance *otInstanceFromIp6(ot::Ip6::Ip6 *aIp6)
 {
     return (otInstance *)CONTAINING_RECORD(aIp6, otInstance, mIp6);
@@ -118,5 +120,6 @@ static inline otInstance *otInstanceFromThreadNetif(ot::ThreadNetif *aThreadNeti
 {
     return (otInstance *)CONTAINING_RECORD(aThreadNetif, otInstance, mThreadNetif);
 }
+#endif // OPENTHREAD_FTD || OPENTHREAD_MTD
 
 #endif  // OPENTHREADINSTANCE_H_

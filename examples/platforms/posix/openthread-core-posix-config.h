@@ -49,7 +49,27 @@
  * Define to 1 to enable default log output.
  *
  */
-#define OPENTHREAD_CONFIG_ENABLE_DEFAULT_LOG_OUTPUT             1
+#define OPENTHREAD_CONFIG_ENABLE_DEFAULT_LOG_OUTPUT            1
+
+#if OPENTHREAD_RADIO
+ /**
+  * @def OPENTHREAD_CONFIG_ENABLE_SOFTWARE_ACK_TIMEOUT
+  *
+  * Define to 1 if you want to enable software ACK timeout logic.
+  *
+  */
+#define OPENTHREAD_CONFIG_ENABLE_SOFTWARE_ACK_TIMEOUT          1
+
+/**
+ * @def OPENTHREAD_CONFIG_ENABLE_SOFTWARE_RETRANSMIT
+ *
+ * Define to 1 if you want to enable software retransmission logic.
+ *
+ * Applicable only if raw link layer API is enabled (i.e., `OPENTHREAD_ENABLE_RAW_LINK_API` is set).
+ *
+ */
+#define OPENTHREAD_CONFIG_ENABLE_SOFTWARE_RETRANSMIT           1
+#endif // OPENTHREAD_RADIO
 
 /**
  * @def OPENTHREAD_CONFIG_ENABLE_PLATFORM_USEC_TIMER

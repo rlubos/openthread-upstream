@@ -156,6 +156,7 @@ void otMessageGetBufferInfo(otInstance *aInstance, otBufferInfo *aBufferInfo)
 
     aBufferInfo->mFreeBuffers = aInstance->mMessagePool.GetFreeBufferCount();
 
+#if OPENTHREAD_MTD || OPENTHREAD_FTD
     aInstance->mThreadNetif.GetMeshForwarder().GetSendQueue().GetInfo(aBufferInfo->m6loSendMessages,
                                                                       aBufferInfo->m6loSendBuffers);
 
@@ -176,4 +177,5 @@ void otMessageGetBufferInfo(otInstance *aInstance, otBufferInfo *aBufferInfo)
 
     aInstance->mThreadNetif.GetCoap().GetRequestMessages().GetInfo(aBufferInfo->mCoapMessages,
                                                                    aBufferInfo->mCoapBuffers);
+#endif // OPENTHREAD_MTD || OPENTHREAD_FTD
 }

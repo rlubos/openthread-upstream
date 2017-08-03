@@ -36,6 +36,7 @@
 #include <openthread/config.h>
 
 #include <openthread/instance.h>
+#include <openthread/openthread.h>
 #include <openthread/platform/misc.h>
 #include <openthread/platform/settings.h>
 
@@ -54,6 +55,12 @@ otInstance *otGetInstance(void)
     return sInstance;
 }
 
+ot::TaskletScheduler &otGetTaskletScheduler(void)
+{
+    return sInstance->mTaskletScheduler;
+}
+
+#if OPENTHREAD_MTD || OPENTHREAD_FTD
 ot::ThreadNetif &otGetThreadNetif(void)
 {
     return sInstance->mThreadNetif;
@@ -64,39 +71,37 @@ ot::MeshForwarder &otGetMeshForwarder(void)
     return sInstance->mThreadNetif.GetMeshForwarder();
 }
 
-ot::TaskletScheduler &otGetTaskletScheduler(void)
-{
-    return sInstance->mTaskletScheduler;
-}
-
 ot::Ip6::Ip6 &otGetIp6(void)
 {
     return sInstance->mIp6;
 }
+#endif // OPENTHREAD_MTD || OPENTHREAD_FTD
 #endif // #if !OPENTHREAD_ENABLE_MULTIPLE_INSTANCES
 
 otInstance::otInstance(void) :
+#if OPENTHREAD_MTD || OPENTHREAD_FTD
     mReceiveIp6DatagramCallback(NULL),
     mReceiveIp6DatagramCallbackContext(NULL),
     mActiveScanCallback(NULL),
     mActiveScanCallbackContext(NULL),
     mEnergyScanCallback(NULL),
     mEnergyScanCallbackContext(NULL),
-    mTimerMilliScheduler(*this),
-#if OPENTHREAD_CONFIG_ENABLE_PLATFORM_USEC_TIMER
-    mTimerMicroScheduler(*this),
-#endif
     mIp6(*this),
     mThreadNetif(mIp6),
-#if OPENTHREAD_ENABLE_RAW_LINK_API
-    mLinkRaw(*this),
-#endif // OPENTHREAD_ENABLE_RAW_LINK_API
 #if OPENTHREAD_ENABLE_APPLICATION_COAP
     mApplicationCoap(mThreadNetif),
 #endif // OPENTHREAD_ENABLE_APPLICATION_COAP
+#endif // OPENTHREAD_MTD || OPENTHREAD_FTD
 #if OPENTHREAD_CONFIG_ENABLE_DYNAMIC_LOG_LEVEL
     mLogLevel(static_cast<otLogLevel>(OPENTHREAD_CONFIG_LOG_LEVEL)),
 #endif // OPENTHREAD_CONFIG_ENABLE_DYNAMIC_LOG_LEVEL
+#if OPENTHREAD_RADIO || OPENTHREAD_ENABLE_RAW_LINK_API
+    mLinkRaw(*this),
+#endif // OPENTHREAD_RADIO || OPENTHREAD_ENABLE_RAW_LINK_API
+#if OPENTHREAD_CONFIG_ENABLE_PLATFORM_USEC_TIMER
+    mTimerMicroScheduler(*this),
+#endif
+    mTimerMilliScheduler(*this),
     mMessagePool(*this)
 {
 }
@@ -105,6 +110,7 @@ using namespace ot;
 
 void otInstancePostConstructor(otInstance *aInstance)
 {
+#if OPENTHREAD_MTD || OPENTHREAD_FTD
     // restore datasets and network information
     otPlatSettingsInit(aInstance);
     aInstance->mThreadNetif.GetMle().Restore();
@@ -126,6 +132,9 @@ void otInstancePostConstructor(otInstance *aInstance)
     }
 
 #endif
+#else
+    OT_UNUSED_VARIABLE(aInstance);
+#endif // OPENTHREAD_MTD || OPENTHREAD_FTD
 }
 
 #if OPENTHREAD_ENABLE_MULTIPLE_INSTANCES
@@ -199,9 +208,13 @@ void otInstanceFinalize(otInstance *aInstance)
 {
     otLogFuncEntry();
 
+#if OPENTHREAD_MTD || OPENTHREAD_FTD
     // Ensure we are disabled
     (void)otThreadSetEnabled(aInstance, false);
     (void)otIp6SetEnabled(aInstance, false);
+#else
+    OT_UNUSED_VARIABLE(aInstance);
+#endif
 
 #if !OPENTHREAD_ENABLE_MULTIPLE_INSTANCES
     sInstance = NULL;
@@ -210,6 +223,7 @@ void otInstanceFinalize(otInstance *aInstance)
     otLogFuncExit();
 }
 
+#if OPENTHREAD_MTD || OPENTHREAD_FTD
 otError otSetStateChangedCallback(otInstance *aInstance, otStateChangedCallback aCallback, void *aCallbackContext)
 {
     otError error = OT_ERROR_NO_BUFS;
@@ -240,11 +254,6 @@ void otRemoveStateChangeCallback(otInstance *aInstance, otStateChangedCallback a
     }
 }
 
-void otInstanceReset(otInstance *aInstance)
-{
-    otPlatReset(aInstance);
-}
-
 void otInstanceFactoryReset(otInstance *aInstance)
 {
     otPlatSettingsWipe(aInstance);
@@ -260,6 +269,12 @@ otError otInstanceErasePersistentInfo(otInstance *aInstance)
 
 exit:
     return error;
+}
+#endif // OPENTHREAD_MTD || OPENTHREAD_FTD
+
+void otInstanceReset(otInstance *aInstance)
+{
+    otPlatReset(aInstance);
 }
 
 otLogLevel otGetDynamicLogLevel(otInstance *aInstance)
@@ -289,4 +304,40 @@ otError otSetDynamicLogLevel(otInstance *aInstance, otLogLevel aLogLevel)
 #endif
 
     return error;
+}
+
+const char *otGetVersionString(void)
+{
+    /**
+     * PLATFORM_VERSION_ATTR_PREFIX and PLATFORM_VERSION_ATTR_SUFFIX are
+     * intended to be used to specify compiler directives to indicate
+     * what linker section the platform version string should be stored.
+     *
+     * This is useful for specifying an exact locaiton of where the version
+     * string will be located so that it can be easily retrieved from the
+     * raw firmware image.
+     *
+     * If PLATFORM_VERSION_ATTR_PREFIX is unspecified, the keyword `static`
+     * is used instead.
+     *
+     * If both are unspecified, the location of the string in the firmware
+     * image will be undefined and may change.
+     */
+
+#ifdef PLATFORM_VERSION_ATTR_PREFIX
+    PLATFORM_VERSION_ATTR_PREFIX
+#else
+    static
+#endif
+    const char sVersion[] =
+        PACKAGE_NAME "/" PACKAGE_VERSION "; " OPENTHREAD_CONFIG_PLATFORM_INFO
+#if defined(__DATE__)
+        "; " __DATE__ " " __TIME__
+#endif
+#ifdef PLATFORM_VERSION_ATTR_SUFFIX
+        PLATFORM_VERSION_ATTR_SUFFIX
+#endif
+        ; // Trailing semicolon to end statement.
+
+    return sVersion;
 }

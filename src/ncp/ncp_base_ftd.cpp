@@ -31,14 +31,12 @@
  */
 
 #include <openthread/config.h>
+
 #include "ncp_base.hpp"
 
-#include <openthread/diag.h>
-#include <openthread/icmp6.h>
 #include <openthread/ncp.h>
 #include <openthread/openthread.h>
 #include <openthread/platform/misc.h>
-#include <openthread/platform/radio.h>
 #include <openthread/thread_ftd.h>
 #if OPENTHREAD_ENABLE_TMF_PROXY
 #include <openthread/tmf_proxy.h>
@@ -50,7 +48,6 @@
 #if OPENTHREAD_ENABLE_COMMISSIONER
 #include "meshcop/commissioner.hpp"
 #endif
-#include "net/ip6.hpp"
 
 #if OPENTHREAD_FTD
 namespace ot {

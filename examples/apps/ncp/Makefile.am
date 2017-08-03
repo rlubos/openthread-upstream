@@ -47,12 +47,6 @@ SOURCES_COMMON                                                         = \
     main.c                                                               \
     $(NULL)
 
-if OPENTHREAD_ENABLE_BUILTIN_MBEDTLS
-LDADD_COMMON                                                          += \
-    $(top_builddir)/third_party/mbedtls/libmbedcrypto.a                  \
-    $(NULL)
-endif # OPENTHREAD_ENABLE_BUILTIN_MBEDTLS
-
 if OPENTHREAD_ENABLE_DIAG
 LDADD_COMMON                                                          += \
     $(top_builddir)/src/diag/libopenthread-diag.a                        \
@@ -207,9 +201,44 @@ ot_ncp_mtd_SOURCES                                                     = \
     $(SOURCES_COMMON)                                                    \
     $(NULL)
 
+if OPENTHREAD_ENABLE_NCP_RADIO
+bin_PROGRAMS                                                          += \
+    ot-ncp-radio                                                         \
+    $(NULL)
+endif
+
+ot_ncp_radio_CPPFLAGS                                                  = \
+    $(CPPFLAGS_COMMON)                                                   \
+    $(NULL)
+
+ot_ncp_radio_LDADD                                                     = \
+    $(top_builddir)/src/ncp/libopenthread-ncp-radio.a                    \
+    $(top_builddir)/src/core/libopenthread-radio.a                       \
+    $(LDADD_COMMON)                                                      \
+    $(top_builddir)/src/core/libopenthread-radio.a                       \
+    $(NULL)
+
+ot_ncp_radio_LDFLAGS                                                   = \
+    $(LDFLAGS_COMMON)                                                    \
+    $(NULL)
+
+ot_ncp_radio_SOURCES                                                   = \
+    $(SOURCES_COMMON)                                                    \
+    $(NULL)
+
+if OPENTHREAD_ENABLE_BUILTIN_MBEDTLS
+ot_ncp_ftd_LDADD                                                      += \
+    $(top_builddir)/third_party/mbedtls/libmbedcrypto.a                  \
+    $(NULL)
+ot_ncp_mtd_LDADD                                                      += \
+    $(top_builddir)/third_party/mbedtls/libmbedcrypto.a                  \
+    $(NULL)
+endif # OPENTHREAD_ENABLE_BUILTIN_MBEDTLS
+
 if OPENTHREAD_ENABLE_LINKER_MAP
 ot_ncp_ftd_LDFLAGS                                                    += -Wl,-Map=ot-ncp-ftd.map
 ot_ncp_mtd_LDFLAGS                                                    += -Wl,-Map=ot-ncp-mtd.map
+ot_ncp_radio_LDFLAGS                                                  += -Wl,-Map=ot-ncp-radio.map
 endif
 
 if OPENTHREAD_BUILD_COVERAGE
