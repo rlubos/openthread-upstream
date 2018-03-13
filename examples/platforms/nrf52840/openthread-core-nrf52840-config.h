@@ -49,7 +49,13 @@
  * The number of message buffers in the buffer pool.
  *
  */
+#ifndef OPENTHREAD_CONFIG_NUM_MESSAGE_BUFFERS
+#if OPENTHREAD_RADIO
+#define OPENTHREAD_CONFIG_NUM_MESSAGE_BUFFERS                   4
+#else
 #define OPENTHREAD_CONFIG_NUM_MESSAGE_BUFFERS                   128
+#endif
+#endif  // OPENTHREAD_CONFIG_NUM_MESSAGE_BUFFERS
 
 /**
  * @def OPENTHREAD_CONFIG_MAX_STATECHANGE_HANDLERS
@@ -97,7 +103,7 @@
  * Define to 1 if you want to support microsecond timer in platform.
  *
  */
-#define OPENTHREAD_CONFIG_ENABLE_PLATFORM_USEC_TIMER     1
+#define OPENTHREAD_CONFIG_ENABLE_PLATFORM_USEC_TIMER            1
 
 /**
  * @def SETTINGS_CONFIG_BASE_ADDRESS

@@ -125,7 +125,7 @@ extern "C" {
  * RADIO Number of buffers in receive queue.
  *
  */
-#define RADIO_RX_BUFFERS  16
+#define RADIO_RX_BUFFERS  2
 
 /**
  * @def RADIO_SHORT_CCAIDLE_TXEN
