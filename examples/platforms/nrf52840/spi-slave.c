@@ -157,10 +157,10 @@ otError otPlatSpiSlavePrepareTransaction(uint8_t *aOutputBuf,
                                          bool     aRequestTransactionFlag)
 {
     otError error = OT_ERROR_NONE;
+    nrf_spis_semstat_t semaphore_status = nrf_spis_semaphore_status_get(SPIS_INSTANCE);
 
     otEXPECT_ACTION(sCompleteCallback != NULL, error = OT_ERROR_INVALID_STATE);
 
-    nrf_spis_semstat_t semaphore_status = nrf_spis_semaphore_status_get(SPIS_INSTANCE);
     otEXPECT_ACTION(((semaphore_status != NRF_SPIS_SEMSTAT_SPIS) && (semaphore_status != NRF_SPIS_SEMSTAT_CPUPENDING)),
                     error = OT_ERROR_BUSY);
 
