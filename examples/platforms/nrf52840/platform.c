@@ -119,6 +119,7 @@ void PlatformProcessDrivers(otInstance *aInstance)
 #ifndef SPIS_TRANSPORT_DISABLE
     nrf5SpiSlaveProcess();
 #endif
+    nrf5TempProcess();
 }
 
 __WEAK void PlatformEventSignalPending(void)
