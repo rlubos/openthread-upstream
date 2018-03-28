@@ -44,16 +44,41 @@
 #ifndef MBEDTLS_SHA256_ALT_H
 #define MBEDTLS_SHA256_ALT_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
+#include <stddef.h>
+#include <stdint.h>
+
 #ifdef MBEDTLS_SHA256_ALT
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#ifndef DISABLE_CC310
+
+#include "crys_hash.h"
+
+/**
+ * @brief SHA-256 context structure
+ */
+typedef struct
+{
+    CRYS_HASHUserContext_t    user_context; ///< User context for CC310 SHA256
+    CRYS_HASH_OperationMode_t mode;         ///< CC310 hash operation mode
+}
+mbedtls_sha256_context;
+
+#else // DISABLE_CC310
+
 #if defined(__CC_ARM)
 #pragma anon_unions
 #endif
-	
+
 /**
  * \brief          SHA-256 context structure
  */
@@ -73,6 +98,8 @@ mbedtls_sha256_context;
 #if defined(__CC_ARM)
 #pragma no_anon_unions
 #endif
+
+#endif // DISABLE_CC310
 
 /**
  * @brief Initialize SHA-256 context
@@ -131,7 +158,9 @@ void mbedtls_sha256_process(mbedtls_sha256_context *ctx, const unsigned char dat
 
 #endif /* MBEDTLS_SHA256_ALT */
 
+#if defined(DISABLE_CC310) && (DISABLE_CC310 != 0)
 /* MBEDTLS_SHA256_ALT was used to redifine context structure. Undefine it now to enable default mbedTLS implementation. */
 #undef MBEDTLS_SHA256_ALT
+#endif // defined(DISABLE_CC310) && (DISABLE_CC310 != 0)
 
 #endif /* MBEDTLS_SHA256_ALT_H */
